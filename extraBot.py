@@ -1,7 +1,6 @@
 from telethon import TelegramClient, sync, events
 import httplib2
 import apiclient
-import socks
 
 from oauth2client.service_account import ServiceAccountCredentials
 spreadsheet_id = '1Ovtm-tYWbjWOtc791bdVRELTrJDmjQDCy_I0Ummo-ho'
