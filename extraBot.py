@@ -25,25 +25,34 @@ client = TelegramClient('test_ses', api_id, api_hash)
 
 @client.on(events.NewMessage())
 async def normal_handler(event):
-#    print(event.message)
-    listSpread = (str(event.message.to_dict()['message']).split("\n"))
-    values = [
-        [
-            str(str(event.message.to_dict()['message']))
-        ],
-    # Additional rows ...
-    ]
+    sender = await event.get_sender()
+    array = []
+    if sender.username == 'TildaFormsBot':
 
-    body = {
-        "majorDimension": "ROWS",
-        'values': values
-    }
-    service.spreadsheets().values().append(
-        spreadsheetId=spreadsheet_id, range='A:A',
-        valueInputOption='RAW', body=body).execute()
-    print(listSpread)
+        listSpread = (str(event.message.to_dict()['message']).split("\n"))
+        for x in listSpread:
+            # разбиваем сообщение, берем значения ключей
+            if len(x) > 0 & (x.find(':') != -1):
+                if x != '-----':
+                    out = x.split(":")[1]
+                    array.append(out)
+
+        array = [value for value in array if value]
+        array.pop()
+
+        values = [
+            array
+        # Additional rows ...
+        ]
+
+        body = {
+            "majorDimension": "ROWS",
+            'values': values
+        }
+        service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id, range='A:K',
+            valueInputOption='RAW', body=body).execute()
 
 
 client.start()
 client.run_until_disconnected()
-
