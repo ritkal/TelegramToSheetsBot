@@ -1,12 +1,15 @@
-import telebot
+from telethon import TelegramClient, sync, events
 import httplib2
 import apiclient
+import socks
 
 from oauth2client.service_account import ServiceAccountCredentials
-TOKEN = '<TOKEN>'
-spreadsheet_id = '<spreadsheet_id>'
+spreadsheet_id = '1Ovtm-tYWbjWOtc791bdVRELTrJDmjQDCy_I0Ummo-ho'
 
-bot = telebot.TeleBot(TOKEN)
+
+api_id = 1018539
+api_hash = '9576da03392f023e777ec252ffe58715'
+
 CREDENTIALS_FILE = 'creds.json'
 
 # Авторизуемся и получаем service — экземпляр доступа к API
@@ -18,19 +21,18 @@ httpAuth = credentials.authorize(httplib2.Http())
 service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
 
-@bot.message_handler(commands=['start'])
-def start_message(message):
-    bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
+client = TelegramClient('test_ses', api_id, api_hash)
 
 
-@bot.message_handler(content_types=['text'])
-def send_text(message):
-    bot.send_message(message.chat.id, 'Запись добавлена в таблицу Sheets')
+@client.on(events.NewMessage())
+async def normal_handler(event):
+#    print(event.message)
+    listSpread = (str(event.message.to_dict()['message']).split("\n"))
     values = [
         [
-            str(message.text)
+            str(str(event.message.to_dict()['message']))
         ],
-        # Additional rows ...
+    # Additional rows ...
     ]
 
     body = {
@@ -40,6 +42,9 @@ def send_text(message):
     service.spreadsheets().values().append(
         spreadsheetId=spreadsheet_id, range='A:A',
         valueInputOption='RAW', body=body).execute()
+    print(listSpread)
 
 
-bot.polling()
+client.start()
+client.run_until_disconnected()
+
