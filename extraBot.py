@@ -28,18 +28,18 @@ TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
                         ('Transaction ID', 'trans'), ('Block ID', 'event'),
                         ])
 
-prepearedData = dict([('name', ''), ('name2', ''),
-                      ('mail', ''), ('phone', ''),
-                      ('social', ''), ('data', ''),
-                      ('job', ''), ('thanks', ''),
-                      ('trans', ''), ('event', ''),
-                      ])
 
 
 @client.on(events.NewMessage())
 async def normal_handler(event):
     sender = await event.get_sender()
     array = []
+    prepearedData = dict([('name', ''), ('name2', ''),
+                          ('mail', ''), ('phone', ''),
+                          ('social', ''), ('data', ''),
+                          ('job', ''), ('thanks', ''),
+                          ('trans', ''), ('event', ''),
+                          ])
     if sender.username == 'TildaFormsBot':
 
         listSpread = (str(event.message.to_dict()['message']).split("\n"))
