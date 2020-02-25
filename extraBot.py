@@ -1,6 +1,5 @@
 from telethon import TelegramClient, sync, events
-import httplib2
-import apiclient
+
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
