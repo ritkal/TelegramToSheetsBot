@@ -19,7 +19,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
 httpAuth = credentials.authorize(httplib2.Http())
 service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
-client = TelegramClient('test_ses', api_id, api_hash)
+client = TelegramClient('session', api_id, api_hash)
 
 TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
                         ('Email', 'mail'), ('Phone', 'phone'),
