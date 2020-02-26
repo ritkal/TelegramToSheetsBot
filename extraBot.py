@@ -21,12 +21,11 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
     CREDENTIALS_FILE,
     ['https://www.googleapis.com/auth/spreadsheets',
      'https://www.googleapis.com/auth/drive'])
-# httpAuth = credentials.authorize(httplib2.Http())
-# service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
+
 google_client = gspread.authorize(credentials)
 sh = google_client.open('SheetsTest')
 
-client = TelegramClient('test_ses3', api_id, api_hash)
+client = TelegramClient('test_ses4', api_id, api_hash)
 
 TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
                         ('Email', 'mail'), ('Phone', 'phone'),
@@ -74,7 +73,6 @@ async def normal_handler(event):
 
         worksheets = sh.worksheets()
         for item in worksheets:
-            print(item.title.strip(), prepearedData['event'].strip(), item.title.strip() == prepearedData['event'].strip())
             if item.title.strip() == prepearedData['event'].strip():
                 next_row = next_available_row(item)
 
