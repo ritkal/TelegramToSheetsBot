@@ -1,13 +1,8 @@
 from telethon import TelegramClient, sync, events
+import httplib2
+import apiclient
 
-import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-
-
-def next_available_row(worksheet):
-    str_list = list(filter(None, worksheet.col_values(1)))
-    return str(len(str_list)+1)
-
 
 spreadsheet_id = '1Ovtm-tYWbjWOtc791bdVRELTrJDmjQDCy_I0Ummo-ho'
 
@@ -21,11 +16,10 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
     CREDENTIALS_FILE,
     ['https://www.googleapis.com/auth/spreadsheets',
      'https://www.googleapis.com/auth/drive'])
+httpAuth = credentials.authorize(httplib2.Http())
+service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
-google_client = gspread.authorize(credentials)
-sh = google_client.open('SheetsTest')
-
-client = TelegramClient('bot_session2', api_id, api_hash)
+client = TelegramClient('test_ses', api_id, api_hash)
 
 TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
                         ('Email', 'mail'), ('Phone', 'phone'),
@@ -39,7 +33,6 @@ TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
 async def normal_handler(event):
     sender = await event.get_sender()
     array = []
-
     prepearedData = dict([('name', ''), ('name2', ''),
                           ('mail', ''), ('phone', ''),
                           ('social', ''), ('data', ''),
@@ -48,9 +41,8 @@ async def normal_handler(event):
                           ])
     if sender.username == 'TildaFormsBot':
 
-        # worksheet.update(row=next_row, sender.username)
-        massageArrOfRows = (str(event.message.to_dict()['message']).split("\n"))
-        for x in massageArrOfRows:
+        listSpread = (str(event.message.to_dict()['message']).split("\n"))
+        for x in listSpread:
             # разбиваем сообщение, берем значения ключей
             if len(x) > 0 & (x.find(':') != -1):
                 if x != '-----':
@@ -61,29 +53,25 @@ async def normal_handler(event):
         for x in prepearedData:
             array.append(prepearedData[x])
 
-        worksheet = sh.sheet1
-        next_row = next_available_row(worksheet)
-        cell_list = worksheet.range('A' + str(next_row) + ':J' + str(next_row))
-        i = 0
-        for cell in cell_list:
-            cell.value = array[i]
-            i = i + 1
+        values = [
+            array
+            # Additional rows ...
+        ]
 
-        worksheet.update_cells(cell_list)
+        body = {
+            "majorDimension": "ROWS",
+            'values': values
+        }
+        di = dict([('rec162216335', 'hiddenPool1'), ('rec163725745', 'hiddenPool2'), ('rec163698462', 'hiddenPool3')])
+        array.pop()
+        array.append(di[prepearedData['event'].strip()])
+        service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id, range=di[prepearedData['event'].strip()],
+            valueInputOption='RAW', body=body).execute()
+        service.spreadsheets().values().append(
+            spreadsheetId=spreadsheet_id, range="hiddenPool",
+            valueInputOption='RAW', body=body).execute()
 
-        worksheets = sh.worksheets()
-        for item in worksheets:
-            if item.title.strip() == prepearedData['event'].strip():
-                next_row = next_available_row(item)
-
-                cell_list = item.range('A' + str(next_row) + ':J' + str(next_row))
-
-                i = 0
-                for cell in cell_list:
-                    cell.value = array[i]
-                    i = i + 1
-                item.update_cells(cell_list)
-        print(prepearedData['event'].strip())
 
 client.start()
 client.run_until_disconnected()
