@@ -25,7 +25,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
 google_client = gspread.authorize(credentials)
 sh = google_client.open('SheetsTest')
 
-client = TelegramClient('test_ses4', api_id, api_hash)
+client = TelegramClient('bot_session', api_id, api_hash)
 
 TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
                         ('Email', 'mail'), ('Phone', 'phone'),
@@ -83,7 +83,7 @@ async def normal_handler(event):
                     cell.value = array[i]
                     i = i + 1
                 item.update_cells(cell_list)
-
+        print(prepearedData['event'].strip())
 
 
 client.start()
