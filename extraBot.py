@@ -26,7 +26,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
 httpAuth = credentials.authorize(httplib2.Http())
 service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
-client = TelegramClient('bot', api_id, api_hash)
+client = TelegramClient('bot_session', api_id, api_hash)
 
 di = dict([('rec162216335', 'hiddenPool1'), ('rec163725745', 'hiddenPool2'), ('rec163698462', 'hiddenPool3')])
 
