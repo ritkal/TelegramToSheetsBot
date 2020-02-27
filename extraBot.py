@@ -19,58 +19,122 @@ credentials = ServiceAccountCredentials.from_json_keyfile_name(
 httpAuth = credentials.authorize(httplib2.Http())
 service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
-client = TelegramClient('session', api_id, api_hash)
+client = TelegramClient('session2', api_id, api_hash)
 
-TransDictionary = dict([('Name', 'name'), ('Name_2', 'name2'),
-                        ('Email', 'mail'), ('Phone', 'phone'),
-                        ('Ссылка_на_социальную_сеть', 'social'), ('Выберите_дату', 'data'),
-                        ('Выберите_задачу', 'job'), ('Выберите_благодарность', 'thanks'),
-                        ('Transaction ID', 'trans'), ('Block ID', 'event'),
-                        ])
+di = dict([('rec162216335', 'hiddenPool1'), ('rec163725745', 'hiddenPool2'), ('rec163698462', 'hiddenPool3')])
+
+trans_dictionary = {
+    'base': dict([('Name', 'name'), ('Block ID', 'event'),
+                  ('Phone', 'phone'),
+                  ]),
+    'volunteer': dict([('Name_2', 'name2'),
+                       ('Email', 'mail'),
+                       ('Ссылка_на_социальную_сеть', 'social'), ('Выберите_дату', 'date'),
+                       ('Выберите_задачу', 'job'), ('Выберите_благодарность', 'thanks'),
+                       ]),
+    'publish': dict([('Название_мероприятия', 'eventName'), ('Название_организации', 'organizationName'),
+                     ('Адрес_места_проведения', 'eventAddress'), ('Ближайшее_метро', 'nearestMetro'),
+                     ('Дата_начала', 'startDate'), ('Дата_окончания', 'endDate'),
+                     ('Время_начала', 'startTime'), ('Время_окончания', 'endTime'),
+                     ('Периодичность_мероприятия', 'eventPeriodicity'),
+                     ('Описание_мероприятия', 'eventDescription'),
+                     ('Правила_поведения_на_мероприятии', 'eventRules'), ('Задачи', 'eventTasks'),
+                     ('Требования_к_волонтёру', 'eventRequirements'),
+                     ('Необходимое_количество_волонтёров', 'volunteerAmount'),
+                     ('Фотографии_для_публикации', 'eventPhotos'),
+                     ]),
+}
+
+
+def union2(dict1, dict2):
+    return dict(list(dict1.items()) + list(dict2.items()))
+
+
+def update_sheet(name, body):
+    service.spreadsheets().values().append(
+        spreadsheetId=spreadsheet_id, range=name,
+        valueInputOption='RAW', body=body).execute()
+
+
+def generate_body(array):
+    # values = [
+    #     array
+    #     # Additional rows ...
+    # ]
+    return {
+        'majorDimension': 'ROWS',
+        'values': [array]
+    }
 
 
 @client.on(events.NewMessage())
 async def normal_handler(event):
     sender = await event.get_sender()
     array = []
-    prepearedData = dict([('name', ''), ('name2', ''),
-                          ('mail', ''), ('phone', ''),
-                          ('social', ''), ('data', ''),
-                          ('job', ''), ('thanks', ''),
-                          ('trans', ''), ('event', ''),
-                          ])
+    prepared_data = {
+        'base': dict([('name', ''), ('phone', ''),
+                      ('event', '')
+                      ]),
+        'volunteer': dict([('name2', ''),
+                           ('mail', ''),
+                           ('social', ''), ('date', ''),
+                           ('job', ''), ('thanks', '')
+                           ]),
+        'publish': dict([('eventName', ''), ('organizationName', ''),
+                         ('eventAddress', ''), ('nearestMetro', ''),
+                         ('startDate', ''), ('endDate', ''),
+                         ('startTime', ''), ('endTime', ''),
+                         ('eventPeriodicity', ''),
+                         ('eventDescription', ''),
+                         ('eventRules', ''), ('eventTasks', ''),
+                         ('eventRequirements', ''),
+                         ('volunteerAmount', ''),
+                         ('eventPhotos', '')
+                         ])
+
+    }
     if sender.username == 'TildaFormsBot':
 
-        listSpread = (str(event.message.to_dict()['message']).split("\n"))
-        for x in listSpread:
+        list_spread = (str(event.message.to_dict()['message']).split("\n"))
+        for x in list_spread:
             # разбиваем сообщение, берем значения ключей
             if len(x) > 0 & (x.find(':') != -1):
                 if x != '-----':
-                    out = x.split(":")
-                    if out[0] in TransDictionary:
-                        prepearedData[TransDictionary[out[0]]] = out[1]
+                    index = x.find(':')
+                    out = ['','']
+                    out[0] = x[:index]
+                    out[1] = x[index+2:]
+                    if out[0] in trans_dictionary['base']:
+                        prepared_data['base'][trans_dictionary['base'][out[0]]] = out[1].strip()
+                    if out[0] in trans_dictionary['volunteer']:
+                        prepared_data['volunteer'][trans_dictionary['volunteer'][out[0]]] = out[1].strip()
+                    if out[0] in trans_dictionary['publish']:
+                        prepared_data['publish'][trans_dictionary['publish'][out[0]]] = out[1].strip()
 
-        for x in prepearedData:
-            array.append(prepearedData[x])
+        if prepared_data['base']['event'] != 'rec165396626':
+            data = union2(prepared_data['base'], prepared_data['volunteer'])
+            data['event'] = di[data['event'].strip()]
 
-        values = [
-            array
-            # Additional rows ...
-        ]
+            for x in data:
+                array.append(data[x])
 
-        body = {
-            "majorDimension": "ROWS",
-            'values': values
-        }
-        di = dict([('rec162216335', 'hiddenPool1'), ('rec163725745', 'hiddenPool2'), ('rec163698462', 'hiddenPool3')])
-        array.pop()
-        array.append(di[prepearedData['event'].strip()])
-        service.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id, range=di[prepearedData['event'].strip()],
-            valueInputOption='RAW', body=body).execute()
-        service.spreadsheets().values().append(
-            spreadsheetId=spreadsheet_id, range="hiddenPool",
-            valueInputOption='RAW', body=body).execute()
+            # swap
+            var = array[1]
+            array[1] = array[3]
+            array[3] = var
+
+            body = generate_body(array)
+            update_sheet("hiddenPool", body)
+            update_sheet(data['event'], body)
+        else:
+            data = union2(prepared_data['base'], prepared_data['publish'])
+
+            del data['event']
+
+            for x in data:
+                array.append(data[x])
+            body = generate_body(array)
+            update_sheet("publish", body)
 
 
 client.start()
