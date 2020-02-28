@@ -2,22 +2,15 @@ from telethon import TelegramClient, sync, events
 import httplib2
 import apiclient
 import os
-from pprint import pprint
 from oauth2client.service_account import ServiceAccountCredentials
 
 spreadsheet_id = '1Ovtm-tYWbjWOtc791bdVRELTrJDmjQDCy_I0Ummo-ho'
 current = ''
 api_id = 1018539
 api_hash = '9576da03392f023e777ec252ffe58715'
-exceptions = ['Request information:', 'Additional information:', 'https://ya-p.ru/publish (https://ya-p.ru/publish)', '-----']
+exceptions = ['Request information:', 'Additional information:', 'https://ya-p.ru/publish (https://ya-p.ru/publish)', '-----', 'https://ya-p.ru/publish', 'Form Name: publish', 'https://ya-p.ru/']
 CREDENTIALS_FILE = 'creds.json'
-answer2 = '''
-Требования_к_волонтёру: sdasd
-sadsad:123
-asdsad
-asd
-asd
-'''
+
 # Авторизуемся и получаем service — экземпляр доступа к API
 credentials = ServiceAccountCredentials.from_json_keyfile_name(
     CREDENTIALS_FILE,
@@ -64,10 +57,6 @@ def update_sheet(name, body):
 
 
 def generate_body(array):
-    # values = [
-    #     array
-    #     # Additional rows ...
-    # ]
     return {
         'majorDimension': 'ROWS',
         'values': [array]
@@ -77,6 +66,7 @@ def generate_body(array):
 @client.on(events.NewMessage())
 async def normal_handler(event):
     sender = await event.get_sender()
+    current = ''
     array = []
     prepared_data = {
         'base': dict([('name', ''), ('phone', ''),
@@ -111,18 +101,19 @@ async def normal_handler(event):
                     out = ['', '']
                     out[0] = x[:index]
                     out[1] = x[index + 2:]
-                    if out[0] in trans_dictionary['base']:
-                        prepared_data['base'][trans_dictionary['base'][out[0]]] = out[1].strip()
-                    else:
-                        if out[0] in trans_dictionary['volunteer']:
-                            prepared_data['volunteer'][trans_dictionary['volunteer'][out[0]]] = out[1].strip()
+                    if out[0] != 'Transaction ID':
+                        if out[0] in trans_dictionary['base']:
+                            prepared_data['base'][trans_dictionary['base'][out[0]]] = out[1].strip()
                         else:
-                            if out[0] in trans_dictionary['publish']:
-                                prepared_data['publish'][trans_dictionary['publish'][out[0]]] = out[1].strip()
-                                current = trans_dictionary['publish'][out[0]]
+                            if out[0] in trans_dictionary['volunteer']:
+                                prepared_data['volunteer'][trans_dictionary['volunteer'][out[0]]] = out[1].strip()
                             else:
-                                prepared_data['publish'][current] = prepared_data['publish'][current] + os.linesep + x
-        pprint(prepared_data['publish'])
+                                if out[0] in trans_dictionary['publish']:
+                                    prepared_data['publish'][trans_dictionary['publish'][out[0]]] = out[1].strip()
+                                    current = trans_dictionary['publish'][out[0]]
+                                else:
+                                    if len(current) != 0:
+                                        prepared_data['publish'][current] = prepared_data['publish'][current] + os.linesep + x
         if prepared_data['base']['event'] != 'rec165396626':
             data = union2(prepared_data['base'], prepared_data['volunteer'])
             data['event'] = di[data['event'].strip()]
@@ -152,90 +143,3 @@ async def normal_handler(event):
 client.start()
 client.run_until_disconnected()
 
-
-# answer = '''Request information:
-# Название_мероприятия: dsfsfdsd
-# Название_организации: sadsadsd
-# Адрес_места_проведения: МОСКВА
-# Ближайшее_метро: sdsadasd
-# Дата_начала: 29/02/2020
-# Дата_окончания: 01/03/2020
-# Время_начала: 12:32
-# Время_окончания: 22:44
-# Периодичность_мероприятия: 123213sdsd
-# Описание_мероприятия: sdsdasd
-# sdsdad
-# sdasdsad
-# Правила_поведения_на_мероприятии: sdasdasdsad
-# Задачи: sadedwdw
-# Требования_к_волонтёру: sdasd
-# sadsad
-# asdsad
-# asd
-# asd
-# Необходимое_количество_волонтёров: 23
-# Name: Никита Трикалинос
-# Phone: +7 891 650 02 95
-#
-# Additional information:
-# Transaction ID: 1891284:652630252
-# Block ID: rec165396626
-# Form Name: publish
-# https://ya-p.ru/publish (https://ya-p.ru/publish)
-# -----'''
-#
-
-# cur = ''
-# array = []
-# prepared_data = {
-#     'base': dict([('name', ''), ('phone', ''),
-#                   ('event', '')
-#                   ]),
-#     'volunteer': dict([('name2', ''),
-#                        ('mail', ''),
-#                        ('social', ''), ('date', ''),
-#                        ('job', ''), ('thanks', '')
-#                        ]),
-#     'publish': dict([('eventName', ''), ('organizationName', ''),
-#                      ('eventAddress', ''), ('nearestMetro', ''),
-#                      ('startDate', ''), ('endDate', ''),
-#                      ('startTime', ''), ('endTime', ''),
-#                      ('eventPeriodicity', ''),
-#                      ('eventDescription', ''),
-#                      ('eventRules', ''), ('eventTasks', ''),
-#                      ('eventRequirements', ''),
-#                      ('volunteerAmount', ''),
-#                      ('eventPhotos', '')
-#                      ])
-# }
-#
-# cur = ''
-# exceptions = ['Request information:', 'Additional information:', 'https://ya-p.ru/publish (https://ya-p.ru/publish)', '-----']
-#
-# list_spread = answer2.split("\n")
-# for x in list_spread:
-#     # разбиваем сообщение, берем значения ключей
-#     if len(x) > 0 & (x.find(':') != -1):
-#         if x not in exceptions:
-#             index = x.find(':')
-#             out = ['', '']
-#             out[0] = x[:index]
-#             out[1] = x[index + 2:]
-#             if out[0] in trans_dictionary['base']:
-#                 prepared_data['base'][trans_dictionary['base'][out[0]]] = out[1].strip()
-#             else:
-#                 if out[0] in trans_dictionary['volunteer']:
-#                     prepared_data['volunteer'][trans_dictionary['volunteer'][out[0]]] = out[1].strip()
-#                 else:
-#                     if out[0] in trans_dictionary['publish']:
-#                         prepared_data['publish'][trans_dictionary['publish'][out[0]]] = out[1].strip()
-#                         cur = trans_dictionary['publish'][out[0]]
-#                     else:
-#                         prepared_data['publish'][cur] = prepared_data['publish'][cur] + os.linesep + x
-#     if cur:
-#         if x.find(':') == -1:
-#             if x != '-----':
-#                 prepared_data['publish'][cur] = prepared_data['publish'][cur]+os.linesep+x
-#
-
-# pprint(prepared_data['publish'])
