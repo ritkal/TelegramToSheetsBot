@@ -8,7 +8,8 @@ spreadsheet_id = '1Ovtm-tYWbjWOtc791bdVRELTrJDmjQDCy_I0Ummo-ho'
 current = ''
 api_id = 1018539
 api_hash = '9576da03392f023e777ec252ffe58715'
-exceptions = ['Request information:', 'Additional information:', 'https://ya-p.ru/publish (https://ya-p.ru/publish)', '-----', 'https://ya-p.ru/publish', 'Form Name: publish', 'https://ya-p.ru/']
+exceptions = ['Request information:', 'Additional information:', 'https://ya-p.ru/publish (https://ya-p.ru/publish)',
+              '-----', 'https://ya-p.ru/publish', 'Form Name: publish', 'https://ya-p.ru/']
 CREDENTIALS_FILE = 'creds.json'
 
 # Авторизуемся и получаем service — экземпляр доступа к API
@@ -21,7 +22,10 @@ service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
 client = TelegramClient('bot_session', api_id, api_hash)
 
-di = dict([('rec162216335', 'hiddenPool1'), ('rec163725745', 'hiddenPool2'), ('rec163698462', 'hiddenPool3')])
+di = dict([('rec162216335', 'pool1'), ('rec163698462', 'pool2'), ('rec166615195', 'pool3'),
+           ('rec166624024', 'pool4'), ('rec166627915', 'pool5'), ('rec165502298', 'pool6'),
+           ('rec166207181', 'pool7'), ('rec166503934', 'pool8')
+           ])
 
 trans_dictionary = {
     'base': dict([('Name', 'name'), ('Block ID', 'event'),
@@ -113,7 +117,8 @@ async def normal_handler(event):
                                     current = trans_dictionary['publish'][out[0]]
                                 else:
                                     if len(current) != 0:
-                                        prepared_data['publish'][current] = prepared_data['publish'][current] + os.linesep + x
+                                        prepared_data['publish'][current] = prepared_data['publish'][
+                                                                                current] + os.linesep + x
         if prepared_data['base']['event'] != 'rec165396626':
             data = union2(prepared_data['base'], prepared_data['volunteer'])
             data['event'] = di[data['event'].strip()]
@@ -127,7 +132,7 @@ async def normal_handler(event):
             array[3] = var
 
             body = generate_body(array)
-            update_sheet("hiddenPool", body)
+            update_sheet("generalPool", body)
             update_sheet(data['event'], body)
         else:
             data = union2(prepared_data['base'], prepared_data['publish'])
@@ -142,4 +147,3 @@ async def normal_handler(event):
 
 client.start()
 client.run_until_disconnected()
-
