@@ -22,9 +22,9 @@ service = apiclient.discovery.build('sheets', 'v4', http=httpAuth)
 
 client = TelegramClient('bot_session', api_id, api_hash)
 
-di = dict([('rec162216335', 'pool1'), ('rec163698462', 'pool2'), ('rec166615195', 'pool3'),
-           ('rec166624024', 'pool4'), ('rec166627915', 'pool5'), ('rec165502298', 'pool6'),
-           ('rec166207181', 'pool7'), ('rec166503934', 'pool8')
+di = dict([('rec162216335', 'pool1'), ('rec163698462', 'pool2'), ('rec166715207', 'pool3'),
+           ('rec166715233', 'pool4'), ('rec166715236', 'pool5'), ('rec166713694', 'pool6'),
+           ('rec166713766', 'pool7'), ('rec166713772', 'pool8'), ('rec163725745', 'pool9')
            ])
 
 trans_dictionary = {
